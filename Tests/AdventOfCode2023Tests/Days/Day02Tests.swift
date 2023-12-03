@@ -51,12 +51,8 @@ extension Day02Tests {
 }
 
 extension Day02Tests {
-    enum BallColor: String, CustomStringConvertible {
+    enum BallColor: String, ParserPrinterStringConvertible {
         case red, blue, green
-
-        var description: String {
-            try! Self.parser.print(self).asString
-        }
 
         static let parser = OneOf {
             "red".map { BallColor.red }
@@ -65,7 +61,7 @@ extension Day02Tests {
         }.eraseToAnyParserPrinter()
     }
 
-    struct BallCount: CustomStringConvertible {
+    struct BallCount: ParserPrinterStringConvertible {
         let color: BallColor
         let count: Int
 
@@ -74,17 +70,14 @@ extension Day02Tests {
             self.count = count
         }
 
-        init(count: Int, color: BallColor) {
-            self.color = color
-            self.count = count
-        }
-
-        var description: String {
-            try! Self.parser.print(self).asString
-        }
-
         static let parser =
-            ParsePrint(input: Substring.self, .memberwise(BallCount.init)) {
+            ParsePrint(
+                input: Substring.self,
+                .convert(
+                    apply: { count, color in BallCount(color: color, count: count) },
+                    unapply: { bc in (bc.count, bc.color) }
+                )
+            ) {
                 Int.parser()
                 " "
                 BallColor.parser
@@ -92,7 +85,7 @@ extension Day02Tests {
             .eraseToAnyParserPrinter()
     }
 
-    struct Game {
+    struct Game: ParserPrinterStringConvertible {
         let number: Int
         let draws: [[BallCount]]
 
@@ -102,10 +95,6 @@ extension Day02Tests {
                     result[ballCount.color] = ballCount.count
                 }
             }
-        }
-
-        var description: String {
-            try! Self.parser.print(self).asString
         }
 
         static let parser = ParsePrint(.memberwise(Game.init)) {
