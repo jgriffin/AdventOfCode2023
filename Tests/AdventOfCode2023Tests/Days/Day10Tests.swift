@@ -84,7 +84,7 @@ final class Day10Tests: XCTestCase {
     func testEnclosedCountInput() throws {
         let grid = try Self.inputParser.parse(Self.input)
         let enclosedCount = grid.enclosedCountConnected()
-        XCTAssertEqual(enclosedCount, 69)
+        XCTAssertEqual(enclosedCount, 303)
     }
 }
 
@@ -106,13 +106,6 @@ extension Day10Tests {
         }
 
         func walkLoop() -> [IndexRC] {
-            func neighborsOf(_ index: IndexRC) -> [IndexRC] {
-                tiles[index].neighborOffsets.map { index + $0 }
-                    .filter { index in
-                        indexRanges.isValidIndex(index) && tiles[index] != .ground
-                    }
-            }
-
             // start doesn't have a direction, so pick a valid one
             let start = indexRanges.allIndicesFlat().first { tiles[$0] == .start }!
             let firstStep = neighborsOf(start).first(where: { neighborsOf($0).contains(start) })!
@@ -127,6 +120,44 @@ extension Day10Tests {
             loop.append(start)
 
             return loop
+        }
+
+        func neighborsOf(_ index: IndexRC) -> [IndexRC] {
+            tiles[index].neighborOffsets.map { index + $0 }
+                .filter { index in
+                    indexRanges.isValidIndex(index) && tiles[index] != .ground
+                }
+        }
+
+        func resolveStartTile(_ startIndex: IndexRC) -> Tile {
+            guard tiles[startIndex] == .start else {
+                return tiles[startIndex]
+            }
+
+            let neighbors = neighborsOf(startIndex).filter { neighborsOf($0).contains(startIndex) }
+            assert(neighbors.count == 2)
+
+            let n = neighbors.contains(startIndex + .north)
+            let s = neighbors.contains(startIndex + .south)
+            let e = neighbors.contains(startIndex + .east)
+            let w = neighbors.contains(startIndex + .west)
+
+            switch (n, s, e, w) {
+            case (true, true, false, false):
+                return .ns
+            case (false, false, true, true):
+                return .ew
+            case (true, false, true, false):
+                return .ne
+            case (true, false, false, true):
+                return .nw
+            case (false, true, false, true):
+                return .sw
+            case (false, true, true, false):
+                return .se
+            default:
+                fatalError()
+            }
         }
 
         func enclosedCountConnected() -> Int {
@@ -214,29 +245,54 @@ extension Day10Tests {
 
             do {
                 var edgeCount = 0
+                var edgeBias: Tile?
                 var cur = index
                 while isValidIndex(cur) {
                     if loopEdges.contains(cur) {
-                        edgeCount += 1
+                        let tile = resolveStartTile(cur)
+                        handleLoopEdge(tile: tile, edgeBias: &edgeBias, edgeCount: &edgeCount)
+                    } else {
+                        assert(edgeBias == nil)
                     }
                     cur += .east
                 }
                 guard edgeCount % 2 == 1 else { return false }
             }
 
-            do {
-                var edgeCount = 0
-                var cur = index
-                while isValidIndex(cur) {
-                    if loopEdges.contains(cur) {
-                        edgeCount += 1
-                    }
-                    cur += .west
-                }
-                guard edgeCount % 2 == 1 else { return false }
-            }
-
             return true
+        }
+
+        func handleLoopEdge(tile: Tile, edgeBias: inout Tile?, edgeCount: inout Int) {
+            switch (edgeBias, tile) {
+            case (_, .start), (.start, _):
+                assertionFailure("resolve start before calling")
+
+            // simple
+            case (nil, .ns):
+                edgeCount += 1
+
+            // passthrough
+            case (.some, .ew):
+                break
+
+            // bias cases
+            case (nil, .ne), (nil, .se):
+                edgeBias = tile
+
+            case (.ne, .sw), (.se, .nw):
+                edgeBias = nil
+                edgeCount += 1
+
+            case (.ne, .nw), (.se, .sw):
+                edgeBias = nil
+
+            // shouldn't be possible
+            case (.some, .ns),
+                 (nil, .ew), (nil, .nw), (nil, .sw),
+                 (.some, .se), (.some, .ne), (.some, .sw), (.some, .nw),
+                 (_, .ground):
+                assertionFailure()
+            }
         }
 
         struct Scan {
