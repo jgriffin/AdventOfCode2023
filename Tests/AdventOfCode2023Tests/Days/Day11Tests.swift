@@ -74,7 +74,7 @@ extension Day11Tests {
         }
 
         init(image: [[Bool]]) {
-            self.rangesRC = image.indexRCRanges()
+            self.rangesRC = image.indexRCRanges
             self.galaxies = rangesRC.allIndicesFlat().filter { image[$0] }.asSet
         }
         

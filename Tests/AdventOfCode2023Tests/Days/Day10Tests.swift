@@ -102,7 +102,7 @@ extension Day10Tests {
 
         init(tiles: [[Day10Tests.Tile]]) {
             self.tiles = tiles
-            self.indexRanges = tiles.indexRCRanges()
+            self.indexRanges = tiles.indexRCRanges
         }
 
         func walkLoop() -> [IndexRC] {
