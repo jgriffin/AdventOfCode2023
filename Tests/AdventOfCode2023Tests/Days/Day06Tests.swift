@@ -14,7 +14,7 @@ final class Day06Tests: XCTestCase {
     func testPart1Example() throws {
         let races = try Self.inputParser.parse(Self.example)
         let winRanges = races.map { $0.winRange() }
-        XCTAssertEqual(winRanges, [2...5, 4...11, 11...19])
+        XCTAssertEqual(winRanges, [2 ... 5, 4 ... 11, 11 ... 19])
         let winsProduct = winRanges.map(\.count).reduce(1,*)
         XCTAssertEqual(winsProduct, 288)
     }
@@ -23,7 +23,7 @@ final class Day06Tests: XCTestCase {
         let races = try Self.inputParser.parse(Self.input)
         let winRanges = races.map { $0.winRange() }
         let winsProduct = winRanges.map(\.count).reduce(1,*)
-        XCTAssertEqual(winsProduct, 800280)
+        XCTAssertEqual(winsProduct, 800_280)
     }
 
     // MARK: - part 2
@@ -31,17 +31,17 @@ final class Day06Tests: XCTestCase {
     func testPart2Example() throws {
         let race = try Race.combining(Self.inputParser.parse(Self.example))
         XCTAssertEqual(race.time, 71530)
-        XCTAssertEqual(race.distance, 940200)
+        XCTAssertEqual(race.distance, 940_200)
         let winRange = race.winRange()
-        XCTAssertEqual(winRange, 14...71516)
+        XCTAssertEqual(winRange, 14 ... 71516)
         XCTAssertEqual(winRange.count, 71503)
     }
-    
+
     func testPart2Input() throws {
         let race = try Race.combining(Self.inputParser.parse(Self.input))
         let winRange = race.winRange()
-        XCTAssertEqual(winRange, 4790126...49918149)
-        XCTAssertEqual(winRange.count, 45128024)
+        XCTAssertEqual(winRange, 4_790_126 ... 49_918_149)
+        XCTAssertEqual(winRange.count, 45_128_024)
     }
 }
 
@@ -57,11 +57,11 @@ extension Day06Tests {
         func winRange() -> ClosedRange<Int> {
             let middle = time / 2
             assert(isWin(hold: middle))
-            let (bottom, top) = (0...middle, middle...time)
+            let (bottom, top) = (0 ... middle, middle ... time)
 
             let firstIndex = bottom.partitioningIndex(where: isWin)
             let lastIndex = top.partitioningIndex(where: { !isWin(hold: $0) })
-            return bottom[firstIndex]...top[top.index(before: lastIndex)]
+            return bottom[firstIndex] ... top[top.index(before: lastIndex)]
         }
 
         static func combining(_ races: [Race]) -> Race {

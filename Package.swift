@@ -14,7 +14,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../EulerTools"), // .package(url: "https://github.com/jgriffin/EulerTools.git", from: "0.3.2"),
+        .package(url: "https://github.com/jgriffin/EulerTools.git", from: "0.3.3"),
+        // .package(path: "../EulerTools"),
         .package(url: "https://github.com/pointfreeco/swift-parsing.git", from: "0.13.0"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.0.0"),
     ],

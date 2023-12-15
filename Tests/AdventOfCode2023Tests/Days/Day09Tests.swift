@@ -18,7 +18,7 @@ final class Day09Tests: XCTestCase {
     func testPredictNextValueInput() throws {
         let histories = try Self.inputParser.parse(Self.input)
         let nextValues = histories.map(predictNextValue)
-        XCTAssertEqual(nextValues.reduce(0,+), 1992273652)
+        XCTAssertEqual(nextValues.reduce(0,+), 1_992_273_652)
     }
 
     func testPredictPrevValue() {

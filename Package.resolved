@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "eulertools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jgriffin/EulerTools.git",
+      "state" : {
+        "revision" : "808e3c9f124a7ee5056f8bdc7f58a39b4301a292",
+        "version" : "0.3.3"
+      }
+    },
+    {
       "identity" : "swift-algorithms",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-algorithms.git",

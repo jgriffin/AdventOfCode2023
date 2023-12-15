@@ -36,7 +36,6 @@ final class Day10Tests: XCTestCase {
         """
 
         let grid = try Self.inputParser.parse(example)
-        print(grid)
         let enclosedCount = grid.enclosedCountConnected()
         XCTAssertEqual(enclosedCount, 4)
     }
@@ -56,7 +55,6 @@ final class Day10Tests: XCTestCase {
         """
 
         let grid = try Self.inputParser.parse(example)
-        print(grid)
         let enclosedCount = grid.enclosedCountConnected()
         XCTAssertEqual(enclosedCount, 8)
     }
@@ -76,7 +74,6 @@ final class Day10Tests: XCTestCase {
         """
 
         let grid = try Self.inputParser.parse(example)
-        print(grid)
         let enclosedCount = grid.enclosedCountConnected()
         XCTAssertEqual(enclosedCount, 10)
     }
@@ -102,7 +99,7 @@ extension Day10Tests {
 
         init(tiles: [[Day10Tests.Tile]]) {
             self.tiles = tiles
-            self.indexRanges = tiles.indexRCRanges
+            indexRanges = tiles.indexRCRanges
         }
 
         func walkLoop() -> [IndexRC] {
@@ -165,18 +162,6 @@ extension Day10Tests {
 
             let colorByIndex = colorTilesNot(loopEdges)
 
-            print(
-                indexRanges.dump { index in
-                    if loopEdges.contains(index) {
-                        return "."
-                    }
-                    if let color = colorByIndex[index] {
-                        return "\(color)"
-                    }
-                    return "_"
-                }
-            )
-
             let groupedByColor = colorByIndex.reduce(into: [Int: [IndexRC]]()) { result, indexColor in
                 result[indexColor.value, default: []].append(indexColor.key)
             }
@@ -236,7 +221,6 @@ extension Day10Tests {
 
             } while wasGroundColor != groundColor
 
-            print("\n\(indexRanges.dump { groundColor[$0].flatMap { "\($0)" } ?? " " })\n")
             return groundColor
         }
 

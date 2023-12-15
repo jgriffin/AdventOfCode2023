@@ -15,20 +15,20 @@ final class Day12Tests: XCTestCase {
         XCTAssertEqual(arrangements, [1, 4, 1, 1, 4, 10])
         XCTAssertEqual(arrangements.reduce(0,+), 21)
     }
-    
+
     func testInput() throws {
         let records = try Self.inputParser.parse(Self.input)
 
         let arrangments = records.map { Arranger.arrangements($0) }
         XCTAssertEqual(arrangments.reduce(0,+), 7344)
     }
-    
+
     func testUnfold() throws {
         let tests: [(input: String, check: String)] = [
             (".# 1", ".#?.#?.#?.#?.# 1,1,1,1,1"),
             ("???.### 1,1,3", "???.###????.###????.###????.###????.### 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3"),
         ]
-        
+
         for test in tests {
             let result = try Record.parser.parse(test.input).unfolded()
             XCTAssertEqual(result.description, test.check)
@@ -39,42 +39,42 @@ final class Day12Tests: XCTestCase {
         let records = try Self.inputParser.parse(Self.example).map { $0.unfolded() }
 
         let arrangements = records.map { Arranger.arrangements($0) }
-        XCTAssertEqual(arrangements, [1, 16384, 1, 16, 2500, 506250])
-        XCTAssertEqual(arrangements.reduce(0,+), 525152)
+        XCTAssertEqual(arrangements, [1, 16384, 1, 16, 2500, 506_250])
+        XCTAssertEqual(arrangements.reduce(0,+), 525_152)
     }
-    
+
     func testUnfoldedInput() throws {
         let records = try Self.inputParser.parse(Self.input).map { $0.unfolded() }
 
         let arrangements = records.map { Arranger.arrangements($0) }
-        
-        XCTAssertEqual(arrangements.prefix(5), [504684, 759375, 5139, 32, 330160])
-        XCTAssertEqual(arrangements.reduce(0,+), 1088006519007)
+
+        XCTAssertEqual(arrangements.prefix(5), [504_684, 759_375, 5139, 32, 330_160])
+        XCTAssertEqual(arrangements.reduce(0,+), 1_088_006_519_007)
     }
 }
 
 extension Day12Tests {
     enum Arranger {
         static var cached = [Record: Int]()
-        
+
         static func arrangements(_ record: Record) -> Int {
             let record = record.simplified()
-            
+
             if let count = cached[record] {
                 return count
             }
-            
+
             let count = arrangementsFunc(record)
             cached[record] = count
             return count
         }
-        
+
         static func arrangementsFunc(_ record: Record) -> Int {
             let springs = record.springs
             let sizes = record.sizes
-            
+
             // MARK: - termination case
-            
+
             guard let firstSize = sizes.first else {
                 if springs.contains(.damaged) {
                     return 0
@@ -82,7 +82,7 @@ extension Day12Tests {
                     return 1
                 }
             }
-            
+
             // MARK: - find the first unknown
 
             // everything up to the first .
@@ -90,19 +90,19 @@ extension Day12Tests {
             guard let firstUnknownIndex = firstSegment.firstIndex(where: { $0 == .unknown }) else {
                 // we know enough to fail or simplify
                 assert(firstSegment.allSatisfy { $0 == .damaged })
-                
+
                 guard firstSegment.count == firstSize else {
                     return 0
                 }
-                
+
                 let newRecord = Record(springs.dropFirst(firstSegment.count).asArray, sizes.dropFirst().asArray)
                 return arrangements(newRecord)
             }
 
             // MARK: - try it both ways and add the counts
-            
+
             var counts = 0
-            
+
             // as operational
             var springsAsOperational = springs
             springsAsOperational[firstUnknownIndex] = .operational
@@ -124,7 +124,7 @@ extension [Day12Tests.Status] {
     var firstSegment: [Day12Tests.Status].SubSequence {
         prefix(while: { $0 != .operational })
     }
-    
+
     var lastSegment: [Day12Tests.Status].SubSequence {
         suffix(while: { $0 != .operational })
     }
@@ -132,10 +132,10 @@ extension [Day12Tests.Status] {
     var firstUnknownIndex: [Day12Tests.Status].Index? {
         firstIndex(where: { $0 == .unknown })
     }
-    
+
     var simplified: [Day12Tests.Status] {
         var springs = self
-        
+
         // compact and trim .operational runs
         var i = springs.startIndex + 1
         while i < springs.endIndex {
@@ -146,7 +146,7 @@ extension [Day12Tests.Status] {
             }
         }
         springs.trim(while: { $0 == .operational })
-        
+
         return springs
     }
 }
@@ -164,14 +164,14 @@ extension Day12Tests {
         func simplified() -> Record {
             Record(springs.simplified, sizes)
         }
-        
+
         func unfolded() -> Record {
             Record(
                 5.times().map { _ in springs }.joined(by: Status.unknown).asArray,
                 5.times().flatMap { _ in sizes }
             )
         }
-        
+
         static let parser = ParsePrint(.memberwise(Record.init)) {
             Many { Status.parser }
             " "
@@ -181,16 +181,16 @@ extension Day12Tests {
 
     enum Status: ParserPrinterStringConvertible {
         case unknown, operational, damaged
-        
+
         static let parser = OneOf {
             "?".map { Status.unknown }
             ".".map { Status.operational }
             "#".map { Status.damaged }
         }
     }
-    
+
     static let input = try! dataFromResource(filename: "Day12Input.txt").asString
-    
+
     static let example: String = """
     ???.### 1,1,3
     .??..??...?##. 1,1,3
@@ -199,19 +199,19 @@ extension Day12Tests {
     ????.######..#####. 1,6,5
     ?###???????? 3,2,1
     """
-    
+
     // MARK: - parser
-    
+
     static let inputParser = Parse {
         Many { Record.parser } separator: { "\n" }
         Skip { Optionally { "\n" } }
     }
-    
+
     func testParseExample() throws {
         let input = try Self.inputParser.parse(Self.example)
         XCTAssertNotNil(input)
     }
-    
+
     func testParseInput() throws {
         let input = try Self.inputParser.parse(Self.input)
         XCTAssertNotNil(input)

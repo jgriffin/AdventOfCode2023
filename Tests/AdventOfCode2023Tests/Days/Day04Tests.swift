@@ -33,7 +33,7 @@ final class Day04Tests: XCTestCase {
     func testCopyGameInput() throws {
         let cards = try! Self.inputParser.parse(Self.input)
         let cardCount = playCopyGame(cards)
-        XCTAssertEqual(cardCount, 9236992)
+        XCTAssertEqual(cardCount, 9_236_992)
     }
 }
 

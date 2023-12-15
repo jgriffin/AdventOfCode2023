@@ -24,26 +24,26 @@ final class Day14Tests: XCTestCase {
         """
 
         platform.tilt(.north)
-        
+
         XCTAssertEqual(platform.description, check)
     }
 
     func testTotalLoadExample() throws {
         var platform = try Self.inputParser.parse(Self.example)
         platform.tilt(.north)
-        
+
         let totalLoad = platform.totalLoad()
         XCTAssertEqual(totalLoad, 136)
     }
-    
+
     func testTotalLoadInput() throws {
         var platform = try Self.inputParser.parse(Self.input)
         platform.tilt(.north)
-        
+
         let totalLoad = platform.totalLoad()
-        XCTAssertEqual(totalLoad, 106997)
+        XCTAssertEqual(totalLoad, 106_997)
     }
-    
+
     func testTiltCycle3Example() throws {
         let checkAfter1 = """
         .....#....
@@ -90,11 +90,11 @@ final class Day14Tests: XCTestCase {
         platform.tiltCycle()
         XCTAssertEqual(platform.description, checkAfter3)
     }
-    
+
     func testTiltCyclePatternExample() throws {
         let initial = try Self.inputParser.parse(Self.example)
         let result = Self.totalLoadFor(initial, afterCycle: 20)
-        
+
         var platform = initial
         20.times { _ in
             platform.tiltCycle()
@@ -105,14 +105,14 @@ final class Day14Tests: XCTestCase {
     func testTiltCycleMillionExample() throws {
         let platform = try Self.inputParser.parse(Self.example)
 
-        let result = Self.totalLoadFor(platform, afterCycle: 1000000000)
+        let result = Self.totalLoadFor(platform, afterCycle: 1_000_000_000)
         XCTAssertEqual(result, 64)
     }
-    
+
     func testTiltCycleMillionInput() throws {
         let platform = try Self.inputParser.parse(Self.input)
 
-        let result = Self.totalLoadFor(platform, afterCycle: 1000000000)
+        let result = Self.totalLoadFor(platform, afterCycle: 1_000_000_000)
         XCTAssertEqual(result, 99641)
     }
 }
@@ -120,10 +120,10 @@ final class Day14Tests: XCTestCase {
 extension Day14Tests {
     static func totalLoadFor(_ start: Platform, afterCycle: Int) -> Int {
         guard let cycle = findTiltCycleStartAndLength(start) else { fatalError() }
-        
+
         let cycleOffset = afterCycle < cycle.start ? afterCycle :
             (afterCycle - cycle.start) % cycle.length + cycle.start
-        print("afterCycle: \(afterCycle) (start: \(cycle.start), length: \(cycle.length)) == \(cycleOffset)")
+        // print("afterCycle: \(afterCycle) (start: \(cycle.start), length: \(cycle.length)) == \(cycleOffset)")
 
         return cycle.load[cycleOffset]
     }
@@ -131,13 +131,13 @@ extension Day14Tests {
     static func findTiltCycleStartAndLength(_ start: Platform) -> (start: Int, length: Int, load: [Int])? {
         var hashHistory: [Int] = []
         var loadHistory: [Int] = []
-        
+
         var platform = start
         var hashValue = platform.hashValue
         while !hashHistory.contains(hashValue) {
             hashHistory.append(hashValue)
             loadHistory.append(platform.totalLoad())
-            
+
             platform.tiltCycle()
             hashValue = platform.hashValue
         }
@@ -145,13 +145,13 @@ extension Day14Tests {
         guard let index = hashHistory.firstIndex(of: hashValue) else {
             return nil
         }
-            
+
         // print(hashHistory.map(\.niceHash).joined(separator: "\n"))
         return (index, hashHistory.count - index, loadHistory)
     }
-    
+
     static let input = try! dataFromResource(filename: "Day14Input.txt").asString
-    
+
     static let example: String = """
     O....#....
     O.OO#....#
@@ -164,10 +164,10 @@ extension Day14Tests {
     #....###..
     #OO..#....
     """
-    
+
     struct Platform: Hashable, ParserPrinterStringConvertible {
         var rocks: [[Rock]]
-        
+
         func totalLoad() -> Int {
             let rowCount = rocks.indexRCRanges.r.upperBound
             return rocks.indexRCRanges.allIndicesFlat()
@@ -175,18 +175,18 @@ extension Day14Tests {
                 .map { rowCount - $0.r }
                 .reduce(0,+)
         }
-        
+
         mutating func tiltCycle() {
             Direction.allCases.forEach { direction in
                 tilt(direction)
             }
         }
-        
+
         mutating func tilt(_ direction: Direction) {
             let primaryOffsets: [IndexRC]
             let secondaryOffsets: [IndexRC]
             let nextOpenStep: IndexRC
-            
+
             switch direction {
             case .north:
                 primaryOffsets = rocks.indexRCRanges.c.map { c in IndexRC(0, c) }
@@ -205,7 +205,7 @@ extension Day14Tests {
                 secondaryOffsets = rocks.indexRCRanges.c.reversed().map { c in IndexRC(0, c) }
                 nextOpenStep = .west
             }
-            
+
             primaryOffsets.forEach { primary in
                 var nextOpen = primary + secondaryOffsets.first!
 
@@ -229,40 +229,40 @@ extension Day14Tests {
                 }
             }
         }
-        
+
         static let parser = ParsePrint(.memberwise(Platform.init)) {
             Many {
                 Many(1...) { Rock.parser }
             } separator: { "\n" }
         }
     }
-    
+
     enum Direction: CaseIterable {
         case north, west, south, east
     }
-    
+
     enum Rock: ParserPrinterStringConvertible {
         case round, square, space
-        
+
         static let parser = OneOf {
             "O".map { Rock.round }
             "#".map { Rock.square }
             ".".map { Rock.space }
         }
     }
-    
+
     // MARK: - parser
-    
+
     static let inputParser = Parse {
         Platform.parser
         Skip { Optionally { "\n" } }
     }
-    
+
     func testParseExample() throws {
         let input = try Self.inputParser.parse(Self.example)
         XCTAssertNotNil(input)
     }
-    
+
     func testParseInput() throws {
         let input = try Self.inputParser.parse(Self.input)
         XCTAssertNotNil(input)

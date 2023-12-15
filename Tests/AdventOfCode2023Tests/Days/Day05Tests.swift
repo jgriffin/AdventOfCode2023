@@ -12,16 +12,16 @@ final class Day05Tests: XCTestCase {
 
     func testPart1Example() throws {
         let almanac = try Almanac.parser.parse(Self.example)
+
         let locations = almanac.seeds.map(almanac.locationForSeed)
-        print(locations)
         XCTAssertEqual(locations.min(), 35)
     }
 
     func testPart1Input() throws {
         let almanac = try Almanac.parser.parse(Self.input)
+
         let locations = almanac.seeds.map(almanac.locationForSeed)
-        print(locations)
-        XCTAssertEqual(locations.min(), 26273516)
+        XCTAssertEqual(locations.min(), 26_273_516)
     }
 
     // MARK: - part 2
@@ -55,7 +55,7 @@ final class Day05Tests: XCTestCase {
 
         let locationRanges = seedRanges.flatMap(almanac.locationsForSeeds)
         XCTAssertEqual(locationRanges.count, 112)
-        XCTAssertEqual(locationRanges.map(\.lowerBound).min(), 34039469)
+        XCTAssertEqual(locationRanges.map(\.lowerBound).min(), 34_039_469)
     }
 }
 
@@ -158,7 +158,7 @@ extension Day05Tests {
 
             init(destinationStart: Int, sourceStart: Int, count: Int) {
                 self.destinationStart = destinationStart
-                self.sourceRange = sourceStart ..< sourceStart + count
+                sourceRange = sourceStart ..< sourceStart + count
             }
 
             var description: String {

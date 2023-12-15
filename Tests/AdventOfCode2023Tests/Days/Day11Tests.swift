@@ -29,19 +29,19 @@ final class Day11Tests: XCTestCase {
 
         XCTAssertEqual(expanded.description, check)
     }
-    
+
     func testDistanceBetweenExample() throws {
-        let universe = try Self.inputParser.parse(Self.example).expandedUniverse(factor: 1)
+        let universe = try Self.inputParser.parse(Self.example).expandedUniverse(factor: 2)
         let distances = universe.distanceBetweenGalaxies()
         XCTAssertEqual(distances, 374)
     }
-    
+
     func testDistanceBetweenInput() throws {
-        let universe = try Self.inputParser.parse(Self.input).expandedUniverse(factor: 1)
+        let universe = try Self.inputParser.parse(Self.input).expandedUniverse(factor: 2)
         let distances = universe.distanceBetweenGalaxies()
-        XCTAssertEqual(distances, 9565386)
+        XCTAssertEqual(distances, 9_565_386)
     }
-    
+
     func testDistanceBetweenXExample() throws {
         let universe = try Self.inputParser.parse(Self.example)
 
@@ -50,16 +50,16 @@ final class Day11Tests: XCTestCase {
 
         let universe10 = universe.expandedUniverse(factor: 10)
         XCTAssertEqual(universe10.distanceBetweenGalaxies(), 1030)
-        
+
         let universe100 = universe.expandedUniverse(factor: 100)
         XCTAssertEqual(universe100.distanceBetweenGalaxies(), 8410)
     }
-    
+
     func testDistanceBetweenMInput() throws {
         let universe = try Self.inputParser.parse(Self.input)
 
-        let universe2 = universe.expandedUniverse(factor: 1000000)
-        XCTAssertEqual(universe2.distanceBetweenGalaxies(), 857986849428)
+        let universe2 = universe.expandedUniverse(factor: 1_000_000)
+        XCTAssertEqual(universe2.distanceBetweenGalaxies(), 857_986_849_428)
     }
 }
 
@@ -69,15 +69,15 @@ extension Day11Tests {
         let rangesRC: IndexRCRanges
 
         init(galaxies: some Collection<IndexRC>) {
-            self.rangesRC = Ranger(galaxies).rangesRC
+            rangesRC = Ranger(galaxies).rangesRC
             self.galaxies = galaxies.asSet
         }
 
         init(image: [[Bool]]) {
-            self.rangesRC = image.indexRCRanges
-            self.galaxies = rangesRC.allIndicesFlat().filter { image[$0] }.asSet
+            rangesRC = image.indexRCRanges
+            galaxies = rangesRC.allIndicesFlat().filter { image[$0] }.asSet
         }
-        
+
         func distanceBetweenGalaxies() -> Int {
             let sorted = zip(1..., galaxies.sorted()).asArray
             let distances = sorted.combinations(ofCount: 2).map { c in
@@ -85,7 +85,7 @@ extension Day11Tests {
             }
             return distances.map(\.dist).reduce(0,+)
         }
-        
+
         func expandedUniverse(factor: Int) -> Universe {
             let expansion = factor - 1
             let rowExpansionMap = {
@@ -96,11 +96,11 @@ extension Day11Tests {
                         rowExpansion += expansion
                         return
                     }
-                    
+
                     result[r] = r + rowExpansion
                 }
             }()
-            
+
             let colExpansionMap = {
                 let nonEmptyCols = galaxies.map(\.c).asSet
                 var colExpansion = 0
@@ -109,22 +109,22 @@ extension Day11Tests {
                         colExpansion += expansion
                         return
                     }
-                    
+
                     result[c] = c + colExpansion
                 }
             }()
-            
+
             let expandedGalaxies = galaxies.map { index in
                 IndexRC(r: rowExpansionMap[index.r]!, c: colExpansionMap[index.c]!)
             }
-            
+
             return Universe(galaxies: expandedGalaxies)
         }
-        
+
         // MARK: - io
-        
+
         var description: String { rangesRC.dump(galaxies.contains, trueString: "#") }
-        
+
         static let parser = Parse(Universe.init) {
             Many {
                 Many(1...) {
@@ -136,9 +136,9 @@ extension Day11Tests {
             } separator: { "\n" }
         }
     }
-    
+
     static let input = try! dataFromResource(filename: "Day11Input.txt").asString
-    
+
     static let example: String = """
     ...#......
     .......#..
@@ -151,19 +151,19 @@ extension Day11Tests {
     .......#..
     #...#.....
     """
-    
+
     // MARK: - parser
-    
+
     static let inputParser = Parse {
         Universe.parser
         Skip { Optionally { "\n" } }
     }
-    
+
     func testParseExample() throws {
         let input = try Self.inputParser.parse(Self.example)
         XCTAssertNotNil(input)
     }
-    
+
     func testParseInput() throws {
         let input = try Self.inputParser.parse(Self.input)
         XCTAssertNotNil(input)
