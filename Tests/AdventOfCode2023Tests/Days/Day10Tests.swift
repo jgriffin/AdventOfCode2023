@@ -160,68 +160,13 @@ extension Day10Tests {
         func enclosedCountConnected() -> Int {
             let loopEdges = walkLoop().asSet
 
-            let colorByIndex = colorTilesNot(loopEdges)
-
-            let groupedByColor = colorByIndex.reduce(into: [Int: [IndexRC]]()) { result, indexColor in
-                result[indexColor.value, default: []].append(indexColor.key)
-            }
+            let groupedByColor = indexRanges.connectedGroupsByColor(isEdge: loopEdges.contains)
             let enclosedColors = groupedByColor.compactMap { color, indices -> Int? in
                 isEnclosed(indices.first!, loopEdges: loopEdges) ? color : nil
             }.sorted()
 
             let count = groupedByColor.filter { enclosedColors.contains($0.key) }.map(\.value.count).reduce(0,+)
             return count
-        }
-
-        func colorTilesNot(_ loopEdges: Set<IndexRC>) -> [IndexRC: Int] {
-            let isValidIndex = indexRanges.isValidIndex
-            let nonLoopIndices = indexRanges.allIndicesFlat().filter { !loopEdges.contains($0) }
-
-            typealias Color = Int
-            var currentColor: Color = 1
-            func nextColor() -> Color {
-                defer { currentColor += 1 }
-                return currentColor
-            }
-
-            var groundColor = [IndexRC: Color]()
-            var mapColorToLower: [Int: Int] = [:]
-
-            func neighborColors(of index: IndexRC) -> [Int] {
-                [.north, .west, .east, .south]
-                    .compactMap {
-                        isValidIndex(index + $0) ? groundColor[index + $0] : 0
-                    }
-                    .asSet
-                    .sorted()
-            }
-
-            nonLoopIndices.forEach { g in
-                let colors = neighborColors(of: g)
-                switch colors.count {
-                case 0:
-                    groundColor[g] = nextColor()
-                case 1:
-                    groundColor[g] = colors.first!
-                default:
-                    let first = colors.first!
-                    groundColor[g] = first
-                    colors.dropFirst().forEach { color in
-                        mapColorToLower[color] = min(first, mapColorToLower[color, default: .max])
-                    }
-                }
-            }
-
-            var wasGroundColor = groundColor
-            repeat {
-                wasGroundColor = groundColor
-                groundColor = groundColor.mapValues { color in
-                    mapColorToLower[color] ?? color
-                }
-
-            } while wasGroundColor != groundColor
-
-            return groundColor
         }
 
         func isEnclosed(_ index: IndexRC, loopEdges: Set<IndexRC>) -> Bool {

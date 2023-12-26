@@ -56,19 +56,19 @@ extension Day17Tests {
 
         init(
             heatMap: [[Int]],
-            crucibleRange: ClosedRange<Int> = 1...3
+            crucibleRange: ClosedRange<Int> = 1 ... 3
         ) {
             self.heatMap = heatMap
             self.crucibleRange = crucibleRange
-            self.isValid = heatMap.indexRCRanges.isValidIndex
-            self.goal = IndexRC(
+            isValid = heatMap.indexRCRanges.isValidIndex
+            goal = IndexRC(
                 heatMap.indexRCRanges.r.last!,
                 heatMap.indexRCRanges.c.last!
             )
         }
 
         var asUltraCrucible: Self {
-            Self(heatMap: heatMap, crucibleRange: 4...10)
+            Self(heatMap: heatMap, crucibleRange: 4 ... 10)
         }
 
         func coolestWalk(start: State = State(loc: IndexRC(0, 0), dir: .right)) -> Int {
@@ -92,7 +92,7 @@ extension Day17Tests {
 
         struct State: Hashable {
             let loc: IndexRC
-            let dir: DirectionRC
+            let dir: IndexRC.Direction
         }
 
         func hScore(_ state: State) -> Int {
@@ -101,12 +101,12 @@ extension Day17Tests {
 
         func neighbors(_ state: State) -> [State] {
             crucibleRange
-                .map { i in state.loc + i * state.dir.offset }
+                .map { i in state.loc + i * IndexRC.offsetOf(state.dir) }
                 .filter(isValid)
                 .flatMap {
                     [
                         State(loc: $0, dir: state.dir.clockwise),
-                        State(loc: $0, dir: state.dir.counterClockwise)
+                        State(loc: $0, dir: state.dir.counterClockwise),
                     ]
                 }
         }
@@ -115,7 +115,7 @@ extension Day17Tests {
             var heat = 0
             var cur = from.loc
             repeat {
-                cur += from.dir.offset
+                cur += from.dir
                 heat += heatMap[cur]
             } while cur != to.loc
 
