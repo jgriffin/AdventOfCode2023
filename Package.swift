@@ -18,6 +18,7 @@ let package = Package(
         .package(path: "../EulerTools"),
         .package(url: "https://github.com/pointfreeco/swift-parsing.git", from: "0.13.0"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.0.0"),
+        .package(url: "https://github.com/li3zhen1/Grape.git", from: "0.5.8"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -28,6 +29,7 @@ let package = Package(
                 .product(name: "Parsing", package: "swift-parsing"),
                 .product(name: "Algorithms", package: "swift-algorithms"),
                 .product(name: "EulerTools", package: "EulerTools"),
+                .product(name: "Grape", package: "Grape"),
             ]
         ),
         .testTarget(

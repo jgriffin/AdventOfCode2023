@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "grape",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/li3zhen1/Grape.git",
+      "state" : {
+        "revision" : "0d37f244e7779df4a6bbb14bb62a657cab31158e",
+        "version" : "0.5.8"
+      }
+    },
+    {
       "identity" : "swift-algorithms",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-algorithms.git",
