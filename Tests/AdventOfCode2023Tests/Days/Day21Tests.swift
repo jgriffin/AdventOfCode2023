@@ -8,18 +8,34 @@ import Parsing
 import XCTest
 
 final class Day21Tests: XCTestCase {
-    func testParseExample() throws {
+    func testCanReachExample() throws {
         let garden = try Self.inputParser.parse(Self.example)
-        XCTAssertEqual(garden.plots.count, 81)
+        XCTAssertEqual(garden.rocks.count, 40)
         let result = garden.canReachCountInSteps(6)
         XCTAssertEqual(result, 16)
     }
 
-    func testParseInput() throws {
+    func testCanReachInput() throws {
         let garden = try Self.inputParser.parse(Self.input)
-        XCTAssertEqual(garden.plots.count, 15507)
+        XCTAssertEqual(garden.rocks.count, 1654)
         let result = garden.canReachCountInSteps(64)
         XCTAssertEqual(result, 3816)
+    }
+
+    func testCanReachMoreExample() throws {
+        let garden = try Self.inputParser.parse(Self.example)
+        XCTAssertEqual(garden.canReachCountExtendedInSteps(6), 16)
+        XCTAssertEqual(garden.canReachCountExtendedInSteps(10), 50)
+        XCTAssertEqual(garden.canReachCountExtendedInSteps(50), 1594)
+        XCTAssertEqual(garden.canReachCountExtendedInSteps(100), 6536)
+        XCTAssertEqual(garden.canReachCountExtendedInSteps(500), 167004)
+        XCTAssertEqual(garden.canReachCountExtendedInSteps(1000), 668697)
+//        XCTAssertEqual(garden.canReachCountExtendedInSteps(5000), 16733044)
+    }
+
+    func testCanReachMoreExploreExample() throws {
+        let garden = try Self.inputParser.parse(Self.example)
+        let count = garden.canReachCountExtendedInSteps(100)
     }
 }
 
@@ -31,45 +47,70 @@ extension Day21Tests {
 
     struct Garden {
         let indexRanges: IndexRCRanges
-        let neighbors: IndexRC.NeighborsOf
-        let plots: Set<IndexRC>
+        let rCount, cCount: Int
+        let rocks: Set<IndexRC>
         let start: IndexRC
 
-        let canReachMemoizer = Memoizer<IndexInSteps, Set<IndexRC>>()
-
-        func canReachCountInSteps(_ steps: Int) -> Int {
-            let canReach = canReachFrom(.init(index: start, inSteps: steps))
-            return canReach.count
+        func notARock(_ index: IndexRC) -> Bool {
+            let centralized = IndexRC(
+                index.r >= 0 ? index.r % rCount : rCount + (index.r % rCount),
+                index.c >= 0 ? index.c % cCount : cCount + (index.c % cCount)
+            )
+            return !rocks.contains(centralized)
         }
 
-        func canReachFrom(_ from: IndexInSteps) -> Set<IndexRC> {
-            canReachMemoizer.memoized(from) { indexInSteps in
-                guard indexInSteps.inSteps > 1 else {
-                    return neighbors(indexInSteps.index).asSet
-                }
-
-                let halfSteps = indexInSteps.inSteps / 2
-                let halfStepsReachable = canReachFrom(.init(index: indexInSteps.index, inSteps: halfSteps))
-
-                let remainSteps = indexInSteps.inSteps - halfSteps
-                let remainStepsReachable = halfStepsReachable.flatMap { halfIndex in
-                    canReachFrom(.init(index: halfIndex, inSteps: remainSteps))
-                }
-
-                return remainStepsReachable.asSet
+        func gridAndIndex(_ index: IndexRC) -> (grid: IndexRC, index: IndexRC) {
+            var rQR = index.r.quotientAndRemainder(dividingBy: rCount)
+            if index.r < 0 {
+                rQR = (rQR.quotient - 1, rCount - rQR.remainder)
             }
+            var cQR = index.c.quotientAndRemainder(dividingBy: cCount)
+            if index.c < 0 {
+                cQR = (cQR.quotient - 1, cCount - cQR.remainder)
+            }
+            return (grid: IndexRC(rQR.quotient, cQR.quotient),
+                    index: IndexRC(rQR.remainder, cQR.remainder))
+        }
+
+        func canReachCountInSteps(_ steps: Int) -> Int {
+            let results = (1 ... steps).reductions([start].asSet) { reachable, _ in
+                reachable
+                    .flatMap { plot in IndexRC.squareNeighborOffsets.map { plot + $0 } }
+                    .filter { indexRanges.isValidIndex($0) && notARock($0) }
+                    .asSet
+            }
+
+            return results.last!.count
+        }
+
+        func canReachCountExtendedInSteps(_ steps: Int) -> Int {
+            let results = (1 ... steps).reductions([start].asSet) { reachable, _ in
+                reachable
+                    .flatMap { plot in IndexRC.squareNeighborOffsets.map { plot + $0 } }
+                    .filter(notARock)
+                    .asSet
+            }
+            
+            let grided = results.map {
+                $0.map(gridAndIndex)
+                    .grouped(by: \.grid)
+                    .mapValues { $0.count }
+                    .sorted(by: \.value)
+            }
+//            print(grided.map { $0.map { "\($0.key)\t\($0.value)" }.joined(separator: "\t") }.joinedByNewlines)
+            print(grided.map { $0.map { "\($0.value)" }.joined(separator: "\t") }.joinedByNewlines)
+
+            return results.last!.count
         }
 
         // MARK: - intitialization
 
         init(_ tiles: [[Tile]]) {
             indexRanges = tiles.indexRCRanges
-            plots = indexRanges.allIndicesFlat().filter { tiles[$0] != .rock }.asSet
+            rCount = indexRanges.r.count
+            cCount = indexRanges.c.count
+            rocks = indexRanges.allIndicesFlat().filter { tiles[$0] == .rock }.asSet
             start = indexRanges.allIndicesFlat().first(where: { tiles[$0] == .start })!
-            neighbors = IndexRC.neighborsFunc(
-                offsets: IndexRC.squareNeighborOffsets,
-                isValidIndex: plots.contains
-            )
         }
 
         static let parser = Parse(Garden.init) {
